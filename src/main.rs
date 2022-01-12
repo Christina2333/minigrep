@@ -26,3 +26,5 @@ fn main() {
     }
 
 }
+
+// 把输出信息重定向到output.txt => cargo run > output.txt 或者 cargo run to poem.txt > output.txt
