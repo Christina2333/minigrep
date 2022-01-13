@@ -21,7 +21,21 @@ impl Config {
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
         Ok(Config{query, filename, case_sensitive})
+    }
 
+    pub fn new2(mut args: env::Args) -> Result<Config, &'static str> {
+        // 第一个参数是程序名，需要忽略
+        args.next();
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a file name"),
+        };
+        let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
+        Ok(Config{query, filename, case_sensitive})
     }
 }
 
@@ -30,9 +44,9 @@ pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
     // 通过？表达式来获取成功时的值，如果错误的话会直接返回Error相关值
     let contents = fs::read_to_string(&config.filename)?;
     let result= if config.case_sensitive {
-            search(&config.query, &contents)
+            search_v2(&config.query, &contents)
         } else {
-            search_case_insensitive(&config.query, &contents)
+            search_case_insensitive_v2(&config.query, &contents)
         };
     for re in result {
         println!("{}", re);
@@ -51,6 +65,10 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     }
     result
 }
+pub fn search_v2<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents.lines().filter(|line| line.contains(query)).collect()
+}
+
 // 区分大小写的search匹配
 pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let query = query.to_lowercase();
@@ -61,6 +79,11 @@ pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a st
         }
     }
     result
+}
+pub fn search_case_insensitive_v2<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents.lines().filter(|line| {
+        line.to_lowercase().contains(&(query.to_lowercase()))
+    }).collect()
 }
 
 #[cfg(test)]
@@ -77,7 +100,8 @@ safe, fast, productive.\n
 Pick three\n\
 Duct page.";
         assert_eq!(vec!["safe, fast, productive."],
-        search(query, contents));
+        // search(query, contents));
+        search_v2(query, contents));
     }
 
     #[test]

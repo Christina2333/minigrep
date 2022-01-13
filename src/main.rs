@@ -9,10 +9,14 @@ use minigrep::Config;
 // export CASE_INSENSITIVE=1，通过echo $CASE_INSENSITIVE进行查看
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    // let args: Vec<String> = env::args().collect();
     // 使用闭包，闭包参数放在||中，可以在后续进行调用
-    let config = Config::new(&args).unwrap_or_else(|err|{
-        // eprintln!宏向标准错误打印信息
+    // let config = Config::new(&args).unwrap_or_else(|err|{
+    //     // eprintln!宏向标准错误打印信息
+    //     eprintln!("Problem parsing arguments {}", err);
+    //     process::exit(1);
+    // });
+    let config = Config::new2(env::args()).unwrap_or_else(|err| {
         eprintln!("Problem parsing arguments {}", err);
         process::exit(1);
     });
